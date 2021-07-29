@@ -5,7 +5,9 @@ class TimeStampedModel(models.Model):
     """To indicate time Stamp for commmon classes"""
 
     created = models.DateTimeField(auto_now_add=True)
+    # save the time when object created
     updated = models.DateTimeField(auto_now=True)
+    # save the time when onject updated
 
     class Meta:
         abstract = True

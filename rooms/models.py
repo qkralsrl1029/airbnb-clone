@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.db.models.deletion import SET_NULL
 from core import models as core_models  # import from abstract class, timestamp format
 from django_countries.fields import CountryField
@@ -55,26 +56,47 @@ class Room(core_models.TimeStampedModel):
     check_in = models.TimeField()
     check_out = models.TimeField()
     instant_book = models.BooleanField(default=False)
-    host = models.ForeignKey(user_models.User, on_delete=models.CASCADE)
+    host = models.ForeignKey(
+        user_models.User, related_name="rooms", on_delete=models.CASCADE
+    )
     # foreign key reference, 1 - n
-    room_type = models.ForeignKey(RoomType, on_delete=models.SET_NULL, null=True)
+    room_type = models.ForeignKey(
+        RoomType, related_name="rooms", on_delete=models.SET_NULL, null=True
+    )
     # foreign key reference, 1 - n
-    amenities = models.ManyToManyField(Amenity, blank=True)
-    facilities = models.ManyToManyField(Facility, blank=True)
-    house_rules = models.ManyToManyField(HouseRule, blank=True)
+    amenities = models.ManyToManyField(Amenity, related_name="rooms", blank=True)
+    facilities = models.ManyToManyField(Facility, related_name="rooms", blank=True)
+    house_rules = models.ManyToManyField(HouseRule, related_name="rooms", blank=True)
     # foreign key reference, n - n
 
     def __str__(self) -> str:
         return self.name
+
+    def save(
+        self, *args, **kwargs
+    ):  # override save func, intercept the saved data when saving
+        self.city = self.city.title()  # additional feature
+        super().save(*args, **kwargs)  # super class save function
+
+    def get_absolute_url(self):
+        return reverse("rooms:detail", kwargs={"pk": self.pk})
+
+    def total_rating(self):
+        total = self.reviews.all()
+        sum = 0
+        if len(total) > 0:
+            for review in total:
+                sum += review.rating_average()
+            return round(sum / self.reviews.count(), 2)
 
 
 class Photo(core_models.TimeStampedModel):
     """Photo model definition"""
 
     caption = models.CharField(max_length=80)
-    file = models.ImageField()
+    file = models.ImageField(upload_to="room_photos")
     room = models.ForeignKey(
-        "Room", on_delete=models.CASCADE
+        "Room", related_name="photoes", on_delete=models.CASCADE
     )  # can refer by using string, not class name
 
     def __str__(self) -> str:

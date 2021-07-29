@@ -41,12 +41,17 @@ DjangoApps = [
 
 Third_Party_Apps = [
     "django_countries",
+    "django_seed",
 ]
 
 ProjectApps = [
     "core.apps.CoreConfig",
     "users.apps.UsersConfig",
     "rooms.apps.RoomsConfig",
+    "reviews.apps.ReviewsConfig",
+    "reservations.apps.ReservationsConfig",
+    "lists.apps.ListsConfig",
+    "conversations.apps.ConversationsConfig",
 ]
 
 INSTALLED_APPS = DjangoApps + ProjectApps + Third_Party_Apps
@@ -66,7 +71,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -133,3 +138,9 @@ STATIC_URL = "/static/"
 
 # use customized user model, not default
 AUTH_USER_MODEL = "users.User"
+
+# set the dir to store images
+MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")  # join base root and custom folder
+
+# set media URLs
+MEDIA_URL = "/media/"  # set absolute directory
